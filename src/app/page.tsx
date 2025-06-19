@@ -1,103 +1,145 @@
-import Image from 'next/image';
+'use client';
+
+import { Header } from '@/components/Header';
+import { VideoCard } from '@/components/VideoCard';
+
+// Mock data for demonstration
+const mockVideos = [
+  {
+    id: '1',
+    title: 'Introduction to Filecoin: The Future of Decentralized Storage',
+    thumbnail: 'https://images.unsplash.com/photo-1518709268805-4e9042af2176?w=400&h=225&fit=crop',
+    channelName: 'FilecoinFoundation',
+    channelAvatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=36&h=36&fit=crop&crop=face',
+    views: 125000,
+    uploadedAt: new Date('2024-01-15'),
+    duration: '12:34',
+  },
+  {
+    id: '2',
+    title: 'Building Your First DApp on Filecoin Virtual Machine',
+    thumbnail: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=400&h=225&fit=crop',
+    channelName: 'Web3Academy',
+    channelAvatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=36&h=36&fit=crop&crop=face',
+    views: 87500,
+    uploadedAt: new Date('2024-01-10'),
+    duration: '25:18',
+  },
+  {
+    id: '3',
+    title: 'IPFS and Filecoin: A Perfect Match for Web3 Storage',
+    thumbnail: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=400&h=225&fit=crop',
+    channelName: 'DecentralizedTech',
+    channelAvatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=36&h=36&fit=crop&crop=face',
+    views: 234000,
+    uploadedAt: new Date('2024-01-08'),
+    duration: '18:42',
+  },
+  {
+    id: '4',
+    title: 'Smart Contracts on Filecoin: Complete Tutorial',
+    thumbnail: 'https://images.unsplash.com/photo-1639762681485-074b7f938ba0?w=400&h=225&fit=crop',
+    channelName: 'BlockchainDev',
+    channelAvatar: 'https://images.unsplash.com/photo-1519244703995-f4e0f30006d5?w=36&h=36&fit=crop&crop=face',
+    views: 156000,
+    uploadedAt: new Date('2024-01-05'),
+    duration: '32:15',
+  },
+  {
+    id: '5',
+    title: 'Filecoin Network Updates: What\'s New in 2024',
+    thumbnail: 'https://images.unsplash.com/photo-1504868584819-f8e8b4b6d7e3?w=400&h=225&fit=crop',
+    channelName: 'CryptoNews',
+    channelAvatar: 'https://images.unsplash.com/photo-1494790108755-2616b332c588?w=36&h=36&fit=crop&crop=face',
+    views: 92000,
+    uploadedAt: new Date('2024-01-03'),
+    duration: '15:27',
+  },
+  {
+    id: '6',
+    title: 'Storing NFTs on Filecoin: Best Practices',
+    thumbnail: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=400&h=225&fit=crop',
+    channelName: 'NFTGuru',
+    channelAvatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=36&h=36&fit=crop&crop=face',
+    views: 78000,
+    uploadedAt: new Date('2024-01-01'),
+    duration: '22:08',
+  },
+  {
+    id: '7',
+    title: 'Filecoin Mining: Complete Setup Guide',
+    thumbnail: 'https://images.unsplash.com/photo-1518709268805-4e9042af2176?w=400&h=225&fit=crop',
+    channelName: 'MiningMaster',
+    channelAvatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=36&h=36&fit=crop&crop=face',
+    views: 345000,
+    uploadedAt: new Date('2023-12-28'),
+    duration: '45:33',
+  },
+  {
+    id: '8',
+    title: 'Web3 Storage Solutions: Comparing Filecoin vs Competitors',
+    thumbnail: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=400&h=225&fit=crop',
+    channelName: 'TechComparison',
+    channelAvatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=36&h=36&fit=crop&crop=face',
+    views: 198000,
+    uploadedAt: new Date('2023-12-25'),
+    duration: '28:15',
+  },
+  {
+    id: '9',
+    title: 'Building a Decentralized Video Platform with Filecoin',
+    thumbnail: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=400&h=225&fit=crop',
+    channelName: 'DevTutorials',
+    channelAvatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=36&h=36&fit=crop&crop=face',
+    views: 167000,
+    uploadedAt: new Date('2023-12-22'),
+    duration: '38:47',
+  },
+  {
+    id: '10',
+    title: 'Filecoin Ecosystem Overview: Projects and Opportunities',
+    thumbnail: 'https://images.unsplash.com/photo-1639762681485-074b7f938ba0?w=400&h=225&fit=crop',
+    channelName: 'EcosystemWatch',
+    channelAvatar: 'https://images.unsplash.com/photo-1519244703995-f4e0f30006d5?w=36&h=36&fit=crop&crop=face',
+    views: 134000,
+    uploadedAt: new Date('2023-12-20'),
+    duration: '35:12',
+  },
+  {
+    id: '11',
+    title: 'Filecoin Token Economics Explained',
+    thumbnail: 'https://images.unsplash.com/photo-1504868584819-f8e8b4b6d7e3?w=400&h=225&fit=crop',
+    channelName: 'TokenomicsExplained',
+    channelAvatar: 'https://images.unsplash.com/photo-1494790108755-2616b332c588?w=36&h=36&fit=crop&crop=face',
+    views: 89000,
+    uploadedAt: new Date('2023-12-18'),
+    duration: '19:25',
+  },
+  {
+    id: '12',
+    title: 'Getting Started with Lotus Node on Filecoin',
+    thumbnail: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=400&h=225&fit=crop',
+    channelName: 'NodeOperators',
+    channelAvatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=36&h=36&fit=crop&crop=face',
+    views: 112000,
+    uploadedAt: new Date('2023-12-15'),
+    duration: '41:18',
+  },
+];
 
 export default function Home() {
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{' '}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+    <div className="min-h-screen bg-background">
+      <Header />
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+      <main className="container mx-auto px-4 py-6">
+        {/* Video Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
+          {mockVideos.map((video) => (
+            <VideoCard key={video.id} {...video} />
+          ))}
         </div>
       </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
     </div>
   );
 }
