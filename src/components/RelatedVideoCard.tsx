@@ -1,6 +1,5 @@
 'use client';
 
-import Image from 'next/image';
 import Link from 'next/link';
 import { formatDistanceToNow } from 'date-fns';
 
@@ -38,11 +37,11 @@ export function RelatedVideoCard({
       <div className="flex gap-2 hover:bg-accent/50 transition-colors rounded-lg p-2">
         {/* Thumbnail */}
         <div className="relative w-40 aspect-video bg-muted rounded-lg overflow-hidden flex-shrink-0">
-          <Image
+          <img
             src={thumbnail}
             alt={title}
-            fill
-            className="object-cover group-hover:scale-105 transition-transform duration-200"
+            // fill
+            className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-200"
           />
           {/* Duration badge */}
           <div className="absolute bottom-1 right-1 bg-black/80 text-white text-xs px-1.5 py-0.5 rounded text-[10px]">

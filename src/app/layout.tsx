@@ -5,7 +5,7 @@ import { Web3Provider } from './Web3Provider';
 import { Toaster } from '@/components/ui/sonner';
 
 export const metadata: Metadata = {
-  title: 'FileTube',
+  title: 'FilTube',
   description: 'People Powered Tube',
 };
 

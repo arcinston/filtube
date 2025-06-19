@@ -1,6 +1,5 @@
 'use client';
 
-import Image from 'next/image';
 import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card';
 import { formatDistanceToNow } from 'date-fns';
@@ -42,10 +41,10 @@ export function VideoCard({
         <CardContent className="p-0">
           {/* Thumbnail */}
           <div className="relative aspect-video bg-muted rounded-lg overflow-hidden">
-            <Image
+            <img
               src={thumbnail}
               alt={title}
-              fill
+              // fill
               className="object-cover group-hover:scale-105 transition-transform duration-200"
             />
             {/* Duration badge */}
@@ -60,7 +59,7 @@ export function VideoCard({
             <div className="flex-shrink-0">
               <div className="w-9 h-9 rounded-full bg-muted overflow-hidden">
                 {channelAvatar ? (
-                  <Image
+                  <img
                     src={channelAvatar}
                     alt={channelName}
                     width={36}

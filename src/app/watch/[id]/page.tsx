@@ -6,7 +6,6 @@ import { RelatedVideoCard } from '@/components/RelatedVideoCard';
 import { TipButton } from '@/components/TipButton';
 import { Button } from '@/components/ui/button';
 import { ThumbsUp, ThumbsDown, Share, Download, Flag } from 'lucide-react';
-import Image from 'next/image';
 
 // Mock data for demonstration
 const mockVideoDetails = {
@@ -175,7 +174,7 @@ export default function WatchPage() {
             <div className="flex items-start justify-between p-4 bg-muted/30 rounded-lg mb-6">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full overflow-hidden bg-muted">
-                  <Image
+                  <img
                     src={video.channelAvatar}
                     alt={video.channelName}
                     width={40}

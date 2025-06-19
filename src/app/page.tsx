@@ -9,7 +9,7 @@ const mockVideos = [
     id: '1',
     title: 'Introduction to Filecoin: The Future of Decentralized Storage',
     thumbnail:
-      'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=400&h=225&fit=crop',
+      'https://0xd77628a11b280f6b23bea5d7dc2d357f0348c741.calibration.filcdn.io/baga6ea4seaqdppvb7wymkur3ajm7akbu3tujryiyf5pn3kze725hlj3ekiehymi',
     channelName: 'FilecoinFoundation',
     channelAvatar:
       'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=36&h=36&fit=crop&crop=face',

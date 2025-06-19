@@ -18,7 +18,6 @@ import {
   BarChart3,
   Library,
 } from 'lucide-react';
-import Image from 'next/image';
 
 interface VideoMetadata {
   title: string;
@@ -266,11 +265,9 @@ export default function CreatePage() {
                         </div>
                       ) : (
                         <div className="relative">
-                          <Image
+                          <img
                             src={thumbnailPreview}
                             alt="Thumbnail preview"
-                            width={400}
-                            height={225}
                             className="w-full aspect-video object-cover rounded-lg"
                           />
                           <Button
