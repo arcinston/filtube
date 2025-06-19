@@ -91,7 +91,9 @@ export function VideoCard({
               <div className="flex items-center text-sm text-muted-foreground mt-1">
                 <span>{formatViews(views)} views</span>
                 <span className="mx-1">•</span>
-                <span>{formatDistanceToNow(uploadedAt, { addSuffix: true })}</span>
+                <span>
+                  {formatDistanceToNow(uploadedAt, { addSuffix: true })}
+                </span>
               </div>
             </div>
           </div>

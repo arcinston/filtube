@@ -58,9 +58,7 @@ export function RelatedVideoCard({
           </h3>
 
           {/* Channel name */}
-          <p className="text-xs text-muted-foreground mb-1">
-            {channelName}
-          </p>
+          <p className="text-xs text-muted-foreground mb-1">{channelName}</p>
 
           {/* Views and date */}
           <div className="flex flex-col text-xs text-muted-foreground">

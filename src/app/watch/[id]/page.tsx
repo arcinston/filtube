@@ -12,10 +12,13 @@ const mockVideoDetails = {
   '1': {
     id: '1',
     title: 'Introduction to Filecoin: The Future of Decentralized Storage',
-    description: 'Learn about Filecoin, a decentralized storage network that turns cloud storage into an algorithmic market. This comprehensive introduction covers the basics of how Filecoin works, its benefits over traditional storage solutions, and how you can get started with using the network.\n\nIn this video, we cover:\n- What is Filecoin and how it works\n- The difference between IPFS and Filecoin\n- Storage deals and retrieval\n- Getting started as a user\n- Future developments and roadmap\n\nTimestamps:\n0:00 Introduction\n2:15 What is Filecoin?\n5:30 How storage deals work\n8:45 IPFS vs Filecoin\n11:20 Getting started\n\nResources:\n- Filecoin.io\n- Filecoin documentation\n- IPFS.io',
-    videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
+    description:
+      'Learn about Filecoin, a decentralized storage network that turns cloud storage into an algorithmic market. This comprehensive introduction covers the basics of how Filecoin works, its benefits over traditional storage solutions, and how you can get started with using the network.\n\nIn this video, we cover:\n- What is Filecoin and how it works\n- The difference between IPFS and Filecoin\n- Storage deals and retrieval\n- Getting started as a user\n- Future developments and roadmap\n\nTimestamps:\n0:00 Introduction\n2:15 What is Filecoin?\n5:30 How storage deals work\n8:45 IPFS vs Filecoin\n11:20 Getting started\n\nResources:\n- Filecoin.io\n- Filecoin documentation\n- IPFS.io',
+    videoUrl:
+      'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
     channelName: 'FilecoinFoundation',
-    channelAvatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=36&h=36&fit=crop&crop=face',
+    channelAvatar:
+      'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=36&h=36&fit=crop&crop=face',
     subscriberCount: 125000,
     views: 125000,
     likes: 8500,
@@ -30,9 +33,11 @@ const relatedVideos = [
   {
     id: '2',
     title: 'Building Your First DApp on Filecoin Virtual Machine',
-    thumbnail: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=400&h=225&fit=crop',
+    thumbnail:
+      'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=400&h=225&fit=crop',
     channelName: 'Web3Academy',
-    channelAvatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=36&h=36&fit=crop&crop=face',
+    channelAvatar:
+      'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=36&h=36&fit=crop&crop=face',
     views: 87500,
     uploadedAt: new Date('2024-01-10'),
     duration: '25:18',
@@ -40,9 +45,11 @@ const relatedVideos = [
   {
     id: '3',
     title: 'IPFS and Filecoin: A Perfect Match for Web3 Storage',
-    thumbnail: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=400&h=225&fit=crop',
+    thumbnail:
+      'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=400&h=225&fit=crop',
     channelName: 'DecentralizedTech',
-    channelAvatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=36&h=36&fit=crop&crop=face',
+    channelAvatar:
+      'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=36&h=36&fit=crop&crop=face',
     views: 234000,
     uploadedAt: new Date('2024-01-08'),
     duration: '18:42',
@@ -50,19 +57,23 @@ const relatedVideos = [
   {
     id: '4',
     title: 'Smart Contracts on Filecoin: Complete Tutorial',
-    thumbnail: 'https://images.unsplash.com/photo-1639762681485-074b7f938ba0?w=400&h=225&fit=crop',
+    thumbnail:
+      'https://images.unsplash.com/photo-1639762681485-074b7f938ba0?w=400&h=225&fit=crop',
     channelName: 'BlockchainDev',
-    channelAvatar: 'https://images.unsplash.com/photo-1519244703995-f4e0f30006d5?w=36&h=36&fit=crop&crop=face',
+    channelAvatar:
+      'https://images.unsplash.com/photo-1519244703995-f4e0f30006d5?w=36&h=36&fit=crop&crop=face',
     views: 156000,
     uploadedAt: new Date('2024-01-05'),
     duration: '32:15',
   },
   {
     id: '5',
-    title: 'Filecoin Network Updates: What\'s New in 2024',
-    thumbnail: 'https://images.unsplash.com/photo-1504868584819-f8e8b4b6d7e3?w=400&h=225&fit=crop',
+    title: "Filecoin Network Updates: What's New in 2024",
+    thumbnail:
+      'https://images.unsplash.com/photo-1504868584819-f8e8b4b6d7e3?w=400&h=225&fit=crop',
     channelName: 'CryptoNews',
-    channelAvatar: 'https://images.unsplash.com/photo-1494790108755-2616b332c588?w=36&h=36&fit=crop&crop=face',
+    channelAvatar:
+      'https://images.unsplash.com/photo-1494790108755-2616b332c588?w=36&h=36&fit=crop&crop=face',
     views: 92000,
     uploadedAt: new Date('2024-01-03'),
     duration: '15:27',
@@ -74,7 +85,9 @@ export default function WatchPage() {
   const videoId = params.id as string;
 
   // Get video details (in a real app, this would be fetched from an API)
-  const video = mockVideoDetails[videoId as keyof typeof mockVideoDetails] || mockVideoDetails['1'];
+  const video =
+    mockVideoDetails[videoId as keyof typeof mockVideoDetails] ||
+    mockVideoDetails['1'];
 
   const formatNumber = (num: number) => {
     if (num >= 1000000) {
@@ -110,6 +123,7 @@ export default function WatchPage() {
                 poster="https://images.unsplash.com/photo-1518709268805-4e9042af2176?w=800&h=450&fit=crop"
               >
                 <source src={video.videoUrl} type="video/mp4" />
+                <track kind="captions" srcLang="en" label="English captions" />
                 Your browser does not support the video tag.
               </video>
             </div>
@@ -169,7 +183,9 @@ export default function WatchPage() {
                   />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-foreground">{video.channelName}</h3>
+                  <h3 className="font-semibold text-foreground">
+                    {video.channelName}
+                  </h3>
                   <p className="text-sm text-muted-foreground">
                     {formatNumber(video.subscriberCount)} subscribers
                   </p>
@@ -188,7 +204,9 @@ export default function WatchPage() {
 
           {/* Related Videos Sidebar */}
           <div className="lg:col-span-1">
-            <h2 className="text-lg font-semibold mb-4 text-foreground">Related Videos</h2>
+            <h2 className="text-lg font-semibold mb-4 text-foreground">
+              Related Videos
+            </h2>
             <div className="space-y-2">
               {relatedVideos.map((relatedVideo) => (
                 <RelatedVideoCard key={relatedVideo.id} {...relatedVideo} />

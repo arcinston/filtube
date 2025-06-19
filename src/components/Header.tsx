@@ -2,7 +2,7 @@
 
 import { ConnectKitButton } from 'connectkit';
 import Link from 'next/link';
-import { Search, Menu, Bell, Video } from 'lucide-react';
+import { Search, Menu, Bell, Plus, Video } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 export function Header() {
@@ -52,10 +52,12 @@ export function Header() {
               <Search className="h-5 w-5" />
             </Button>
 
-            {/* Upload button */}
-            <Button variant="ghost" size="icon">
-              <Video className="h-5 w-5" />
-            </Button>
+            {/* Create button */}
+            <Link href="/create">
+              <Button variant="ghost" size="icon">
+                <Plus className="h-5 w-5" />
+              </Button>
+            </Link>
 
             {/* Notifications */}
             <Button variant="ghost" size="icon">
