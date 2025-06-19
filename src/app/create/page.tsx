@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useId } from 'react';
+import { useState, useId, useEffect } from 'react';
 import { Header } from '@/components/Header';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { WalletStats } from '@/components/WalletStats';
 import { VideoLibrary } from '@/components/VideoLibrary';
+import { useFileUpload, type UploadedInfo } from '@/hooks/useFileUpload';
 import {
   Upload,
   X,
@@ -18,6 +19,13 @@ import {
   BarChart3,
   Library,
 } from 'lucide-react';
+
+interface UploadState {
+  uploading: boolean;
+  completed?: boolean;
+  error?: boolean;
+  info?: UploadedInfo;
+}
 
 interface VideoMetadata {
   title: string;
@@ -41,7 +49,38 @@ export default function CreatePage() {
   const [tagInput, setTagInput] = useState('');
   const [thumbnailPreview, setThumbnailPreview] = useState<string | null>(null);
   const [videoPreview, setVideoPreview] = useState<string | null>(null);
-  const [isUploading, setIsUploading] = useState(false);
+  const [videoUploadInfo, setVideoUploadInfo] = useState<UploadState | null>(
+    null,
+  );
+  const [thumbnailUploadInfo, setThumbnailUploadInfo] =
+    useState<UploadState | null>(null);
+
+  const { uploadFileMutation, progress, uploadedInfo, handleReset, status } =
+    useFileUpload();
+
+  // Capture uploadedInfo when upload completes
+  useEffect(() => {
+    if (uploadedInfo && uploadFileMutation.isSuccess) {
+      if (videoUploadInfo?.uploading) {
+        setVideoUploadInfo({
+          uploading: false,
+          completed: true,
+          info: uploadedInfo,
+        });
+      } else if (thumbnailUploadInfo?.uploading) {
+        setThumbnailUploadInfo({
+          uploading: false,
+          completed: true,
+          info: uploadedInfo,
+        });
+      }
+    }
+  }, [
+    uploadedInfo,
+    uploadFileMutation.isSuccess,
+    videoUploadInfo?.uploading,
+    thumbnailUploadInfo?.uploading,
+  ]);
 
   const videoUploadId = useId();
   const thumbnailUploadId = useId();
@@ -49,16 +88,29 @@ export default function CreatePage() {
   const descriptionId = useId();
   const categoryId = useId();
 
-  const handleVideoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleVideoUpload = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
     const file = event.target.files?.[0];
     if (file) {
       setMetadata((prev) => ({ ...prev, video: file }));
       const videoUrl = URL.createObjectURL(file);
       setVideoPreview(videoUrl);
+
+      // Upload to Filecoin
+      setVideoUploadInfo({ uploading: true });
+      handleReset();
+      try {
+        await uploadFileMutation.mutateAsync(file);
+        // uploadedInfo will be captured in useEffect
+      } catch (error) {
+        console.error('Video upload failed:', error);
+        setVideoUploadInfo({ uploading: false, error: true });
+      }
     }
   };
 
-  const handleThumbnailUpload = (
+  const handleThumbnailUpload = async (
     event: React.ChangeEvent<HTMLInputElement>,
   ) => {
     const file = event.target.files?.[0];
@@ -66,6 +118,17 @@ export default function CreatePage() {
       setMetadata((prev) => ({ ...prev, thumbnail: file }));
       const imageUrl = URL.createObjectURL(file);
       setThumbnailPreview(imageUrl);
+
+      // Upload to Filecoin
+      setThumbnailUploadInfo({ uploading: true });
+      handleReset();
+      try {
+        await uploadFileMutation.mutateAsync(file);
+        // uploadedInfo will be captured in useEffect
+      } catch (error) {
+        console.error('Thumbnail upload failed:', error);
+        setThumbnailUploadInfo({ uploading: false, error: true });
+      }
     }
   };
 
@@ -88,28 +151,44 @@ export default function CreatePage() {
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    setIsUploading(true);
 
     try {
-      // Here you would implement the actual upload logic
-      // For now, we'll just simulate an upload
-      // TODO: Implement actual upload to IPFS/Filecoin
+      // Check if video file exists and has been uploaded
+      if (!metadata.video) {
+        alert('Please select a video file');
+        return;
+      }
 
-      // Simulate upload delay
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      if (videoUploadInfo?.uploading || uploadFileMutation.isPending) {
+        alert('Please wait for file upload to complete');
+        return;
+      }
+
+      if (!videoUploadInfo?.completed) {
+        alert('Please upload video to Filecoin first');
+        return;
+      }
 
       // In a real implementation, you would:
-      // 1. Upload video to IPFS/Filecoin
-      // 2. Upload thumbnail to IPFS/Filecoin
-      // 3. Store metadata on blockchain
-      // 4. Navigate to the video page
+      // 1. Store metadata on blockchain with CommP references
+      // 2. Navigate to the video page
 
-      alert('Video uploaded successfully!');
-    } catch (_error) {
-      // TODO: Implement proper error handling and logging
-      alert('Upload failed. Please try again.');
-    } finally {
-      setIsUploading(false);
+      const videoData = {
+        title: metadata.title,
+        description: metadata.description,
+        category: metadata.category,
+        tags: metadata.tags,
+        videoCommP: videoUploadInfo?.info?.commp,
+        thumbnailCommP: thumbnailUploadInfo?.info?.commp,
+        videoUploadInfo: videoUploadInfo,
+        thumbnailUploadInfo: thumbnailUploadInfo,
+      };
+
+      console.log('Submitting video data:', videoData);
+      alert('Video metadata prepared for blockchain storage!');
+    } catch (error) {
+      console.error('Submit failed:', error);
+      alert('Submit failed. Please try again.');
     }
   };
 
@@ -188,6 +267,7 @@ export default function CreatePage() {
                                   accept="video/*"
                                   className="hidden"
                                   onChange={handleVideoUpload}
+                                  disabled={uploadFileMutation.isPending}
                                 />
                               </Label>
                               <p className="mt-1 text-xs text-muted-foreground">
@@ -216,11 +296,43 @@ export default function CreatePage() {
                             className="absolute top-2 right-2"
                             onClick={() => {
                               setVideoPreview(null);
-                              setMetadata((prev) => ({ ...prev, video: null }));
+                              setMetadata((prev) => ({
+                                ...prev,
+                                video: null,
+                              }));
+                              setVideoUploadInfo(null);
+                              handleReset();
                             }}
+                            disabled={videoUploadInfo?.uploading}
                           >
                             <X className="w-4 h-4" />
                           </Button>
+                          {videoUploadInfo?.completed && (
+                            <div className="absolute bottom-2 left-2 bg-green-500 text-white px-2 py-1 rounded text-xs">
+                              ✓ Stored on Filecoin
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Upload Progress for Video */}
+                      {videoUploadInfo?.uploading && (
+                        <div className="space-y-2">
+                          <div className="flex justify-between text-sm">
+                            <span>Uploading video to Filecoin...</span>
+                            <span>{progress}%</span>
+                          </div>
+                          <div className="w-full bg-secondary rounded-full h-2">
+                            <div
+                              className="bg-primary h-2 rounded-full transition-all duration-300"
+                              style={{ width: `${progress}%` }}
+                            />
+                          </div>
+                          {status && (
+                            <p className="text-xs text-muted-foreground">
+                              {status}
+                            </p>
+                          )}
                         </div>
                       )}
                     </div>
@@ -255,6 +367,7 @@ export default function CreatePage() {
                                   accept="image/*"
                                   className="hidden"
                                   onChange={handleThumbnailUpload}
+                                  disabled={uploadFileMutation.isPending}
                                 />
                               </Label>
                               <p className="mt-1 text-xs text-muted-foreground">
@@ -281,10 +394,39 @@ export default function CreatePage() {
                                 ...prev,
                                 thumbnail: null,
                               }));
+                              setThumbnailUploadInfo(null);
+                              handleReset();
                             }}
+                            disabled={thumbnailUploadInfo?.uploading}
                           >
                             <X className="w-4 h-4" />
                           </Button>
+                          {thumbnailUploadInfo?.completed && (
+                            <div className="absolute bottom-2 left-2 bg-green-500 text-white px-2 py-1 rounded text-xs">
+                              ✓ Stored on Filecoin
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Upload Progress for Thumbnail */}
+                      {thumbnailUploadInfo?.uploading && (
+                        <div className="space-y-2">
+                          <div className="flex justify-between text-sm">
+                            <span>Uploading thumbnail to Filecoin...</span>
+                            <span>{progress}%</span>
+                          </div>
+                          <div className="w-full bg-secondary rounded-full h-2">
+                            <div
+                              className="bg-primary h-2 rounded-full transition-all duration-300"
+                              style={{ width: `${progress}%` }}
+                            />
+                          </div>
+                          {status && (
+                            <p className="text-xs text-muted-foreground">
+                              {status}
+                            </p>
+                          )}
                         </div>
                       )}
                     </div>
@@ -415,13 +557,113 @@ export default function CreatePage() {
                 </Button>
                 <Button
                   type="submit"
-                  disabled={!metadata.video || !metadata.title || isUploading}
+                  disabled={
+                    !metadata.video ||
+                    !metadata.title ||
+                    videoUploadInfo?.uploading ||
+                    !videoUploadInfo?.completed
+                  }
                   className="min-w-[120px]"
                 >
-                  {isUploading ? 'Uploading...' : 'Publish Video'}
+                  {videoUploadInfo?.uploading
+                    ? 'Uploading...'
+                    : 'Publish Video'}
                 </Button>
               </div>
             </form>
+
+            {/* Upload Status Display */}
+            {(videoUploadInfo?.completed || thumbnailUploadInfo?.completed) && (
+              <Card className="mt-6">
+                <CardHeader>
+                  <CardTitle>Upload Information</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {videoUploadInfo?.completed && (
+                      <div>
+                        <h4 className="font-semibold mb-2">Video Upload</h4>
+                        <div className="space-y-1 text-sm">
+                          {videoUploadInfo.info?.fileName && (
+                            <p>
+                              <strong>File:</strong>{' '}
+                              {videoUploadInfo.info.fileName}
+                            </p>
+                          )}
+                          {videoUploadInfo.info?.fileSize && (
+                            <p>
+                              <strong>Size:</strong>{' '}
+                              {(
+                                videoUploadInfo.info.fileSize /
+                                1024 /
+                                1024
+                              ).toFixed(2)}{' '}
+                              MB
+                            </p>
+                          )}
+                          {videoUploadInfo.info?.commp && (
+                            <p>
+                              <strong>CommP:</strong>{' '}
+                              <code className="text-xs">
+                                {videoUploadInfo.info.commp}
+                              </code>
+                            </p>
+                          )}
+                          {videoUploadInfo.info?.txHash && (
+                            <p>
+                              <strong>Transaction:</strong>{' '}
+                              <code className="text-xs">
+                                {videoUploadInfo.info.txHash}
+                              </code>
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                    {thumbnailUploadInfo?.completed && (
+                      <div>
+                        <h4 className="font-semibold mb-2">Thumbnail Upload</h4>
+                        <div className="space-y-1 text-sm">
+                          {thumbnailUploadInfo.info?.fileName && (
+                            <p>
+                              <strong>File:</strong>{' '}
+                              {thumbnailUploadInfo.info.fileName}
+                            </p>
+                          )}
+                          {thumbnailUploadInfo.info?.fileSize && (
+                            <p>
+                              <strong>Size:</strong>{' '}
+                              {(
+                                thumbnailUploadInfo.info.fileSize /
+                                1024 /
+                                1024
+                              ).toFixed(2)}{' '}
+                              MB
+                            </p>
+                          )}
+                          {thumbnailUploadInfo.info?.commp && (
+                            <p>
+                              <strong>CommP:</strong>{' '}
+                              <code className="text-xs">
+                                {thumbnailUploadInfo.info.commp}
+                              </code>
+                            </p>
+                          )}
+                          {thumbnailUploadInfo.info?.txHash && (
+                            <p>
+                              <strong>Transaction:</strong>{' '}
+                              <code className="text-xs">
+                                {thumbnailUploadInfo.info.txHash}
+                              </code>
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
           </TabsContent>
 
           <TabsContent value="library" className="mt-6">
