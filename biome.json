@@ -7,7 +7,7 @@
       "recommended": true,
       "suspicious": {
         "noShadowRestrictedNames": "off",
-        "noConsole": { "level": "warn", "options": { "allow": ["log"] } }
+        "noConsole": { "level": "off" }
       },
       "a11y": {
         "noSvgWithoutTitle": "off",

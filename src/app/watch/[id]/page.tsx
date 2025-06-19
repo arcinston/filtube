@@ -3,6 +3,7 @@
 import { useParams } from 'next/navigation';
 import { Header } from '@/components/Header';
 import { RelatedVideoCard } from '@/components/RelatedVideoCard';
+import { TipButton } from '@/components/TipButton';
 import { Button } from '@/components/ui/button';
 import { ThumbsUp, ThumbsDown, Share, Download, Flag } from 'lucide-react';
 import Image from 'next/image';
@@ -191,7 +192,13 @@ export default function WatchPage() {
                   </p>
                 </div>
               </div>
-              <Button>Subscribe</Button>
+              <div className="flex items-center gap-2">
+                <TipButton
+                  channelName={video.channelName}
+                  channelAvatar={video.channelAvatar}
+                />
+                <Button>Subscribe</Button>
+              </div>
             </div>
 
             {/* Video Description */}
