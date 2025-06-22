@@ -54,6 +54,8 @@ export default function CreatePage() {
   );
   const [thumbnailUploadInfo, setThumbnailUploadInfo] =
     useState<UploadState | null>(null);
+  const [videoDragActive, setVideoDragActive] = useState(false);
+  const [thumbnailDragActive, setThumbnailDragActive] = useState(false);
 
   const { uploadFileMutation, progress, uploadedInfo, handleReset, status } =
     useFileUpload();
@@ -93,20 +95,12 @@ export default function CreatePage() {
   ) => {
     const file = event.target.files?.[0];
     if (file) {
-      setMetadata((prev) => ({ ...prev, video: file }));
-      const videoUrl = URL.createObjectURL(file);
-      setVideoPreview(videoUrl);
-
-      // Upload to Filecoin
-      setVideoUploadInfo({ uploading: true });
-      handleReset();
-      try {
-        await uploadFileMutation.mutateAsync(file);
-        // uploadedInfo will be captured in useEffect
-      } catch (error) {
-        console.error('Video upload failed:', error);
-        setVideoUploadInfo({ uploading: false, error: true });
+      if (file.size > 1024 * 1024 * 1024) {
+        // 1GB limit
+        alert('Video file must be smaller than 1GB');
+        return;
       }
+      await handleVideoFile(file);
     }
   };
 
@@ -115,20 +109,118 @@ export default function CreatePage() {
   ) => {
     const file = event.target.files?.[0];
     if (file) {
-      setMetadata((prev) => ({ ...prev, thumbnail: file }));
-      const imageUrl = URL.createObjectURL(file);
-      setThumbnailPreview(imageUrl);
-
-      // Upload to Filecoin
-      setThumbnailUploadInfo({ uploading: true });
-      handleReset();
-      try {
-        await uploadFileMutation.mutateAsync(file);
-        // uploadedInfo will be captured in useEffect
-      } catch (error) {
-        console.error('Thumbnail upload failed:', error);
-        setThumbnailUploadInfo({ uploading: false, error: true });
+      if (file.size > 10 * 1024 * 1024) {
+        // 10MB limit for images
+        alert('Image file must be smaller than 10MB');
+        return;
       }
+      await handleThumbnailFile(file);
+    }
+  };
+
+  const handleVideoFile = async (file: File) => {
+    setMetadata((prev) => ({ ...prev, video: file }));
+    const videoUrl = URL.createObjectURL(file);
+    setVideoPreview(videoUrl);
+
+    // Upload to Filecoin
+    setVideoUploadInfo({ uploading: true });
+    handleReset();
+    try {
+      await uploadFileMutation.mutateAsync(file);
+      // uploadedInfo will be captured in useEffect
+    } catch (error) {
+      console.error('Video upload failed:', error);
+      setVideoUploadInfo({ uploading: false, error: true });
+    }
+  };
+
+  const handleThumbnailFile = async (file: File) => {
+    setMetadata((prev) => ({ ...prev, thumbnail: file }));
+    const imageUrl = URL.createObjectURL(file);
+    setThumbnailPreview(imageUrl);
+
+    // Upload to Filecoin
+    setThumbnailUploadInfo({ uploading: true });
+    handleReset();
+    try {
+      await uploadFileMutation.mutateAsync(file);
+      // uploadedInfo will be captured in useEffect
+    } catch (error) {
+      console.error('Thumbnail upload failed:', error);
+      setThumbnailUploadInfo({ uploading: false, error: true });
+    }
+  };
+
+  const handleVideoDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setVideoDragActive(true);
+  };
+
+  const handleVideoDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setVideoDragActive(false);
+  };
+
+  const handleVideoDrop = async (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setVideoDragActive(false);
+
+    const files = Array.from(e.dataTransfer.files);
+    const videoFile = files.find((file) => file.type.startsWith('video/'));
+
+    if (!videoFile) {
+      alert('Please drop a valid video file (MP4, WebM, or MOV)');
+      return;
+    }
+
+    if (videoFile.size > 1024 * 1024 * 1024) {
+      // 1GB limit
+      alert('Video file must be smaller than 1GB');
+      return;
+    }
+
+    if (!uploadFileMutation.isPending) {
+      await handleVideoFile(videoFile);
+    }
+  };
+
+  const handleThumbnailDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setThumbnailDragActive(true);
+  };
+
+  const handleThumbnailDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setThumbnailDragActive(false);
+  };
+
+  const handleThumbnailDrop = async (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setThumbnailDragActive(false);
+
+    const files = Array.from(e.dataTransfer.files);
+    const imageFile = files.find((file) => file.type.startsWith('image/'));
+
+    if (!imageFile) {
+      alert('Please drop a valid image file (JPG, PNG, or GIF)');
+      return;
+    }
+
+    if (imageFile.size > 10 * 1024 * 1024) {
+      // 10MB limit for images
+      alert('Image file must be smaller than 10MB');
+      return;
+    }
+
+    if (!uploadFileMutation.isPending) {
+      await handleThumbnailFile(imageFile);
     }
   };
 
@@ -250,7 +342,25 @@ export default function CreatePage() {
                   <CardContent>
                     <div className="space-y-4">
                       {!videoPreview ? (
-                        <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-8">
+                        <div
+                          className={`border-2 border-dashed rounded-lg p-8 transition-colors cursor-pointer hover:border-primary/50 hover:bg-primary/5 ${
+                            videoDragActive
+                              ? 'border-primary bg-primary/5'
+                              : 'border-muted-foreground/25'
+                          }`}
+                          onDragOver={handleVideoDragOver}
+                          onDragLeave={handleVideoDragLeave}
+                          onDrop={handleVideoDrop}
+                          role="button"
+                          tabIndex={0}
+                          aria-label="Upload video file by clicking or dragging and dropping"
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                              e.preventDefault();
+                              document.getElementById(videoUploadId)?.click();
+                            }
+                          }}
+                        >
                           <div className="text-center">
                             <Upload className="mx-auto h-12 w-12 text-muted-foreground/50" />
                             <div className="mt-4">
@@ -259,7 +369,7 @@ export default function CreatePage() {
                                 className="cursor-pointer"
                               >
                                 <span className="text-sm font-medium text-primary hover:text-primary/80">
-                                  Click to upload video
+                                  Click to upload video or drag and drop
                                 </span>
                                 <Input
                                   id={videoUploadId}
@@ -271,6 +381,9 @@ export default function CreatePage() {
                                 />
                               </Label>
                               <p className="mt-1 text-xs text-muted-foreground">
+                                Drag and drop or click to upload
+                              </p>
+                              <p className="text-xs text-muted-foreground">
                                 MP4, WebM, or MOV (MAX. 1GB)
                               </p>
                             </div>
@@ -350,7 +463,27 @@ export default function CreatePage() {
                   <CardContent>
                     <div className="space-y-4">
                       {!thumbnailPreview ? (
-                        <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-8 aspect-video">
+                        <div
+                          className={`border-2 border-dashed rounded-lg p-8 aspect-video transition-colors cursor-pointer hover:border-primary/50 hover:bg-primary/5 ${
+                            thumbnailDragActive
+                              ? 'border-primary bg-primary/5'
+                              : 'border-muted-foreground/25'
+                          }`}
+                          onDragOver={handleThumbnailDragOver}
+                          onDragLeave={handleThumbnailDragLeave}
+                          onDrop={handleThumbnailDrop}
+                          role="button"
+                          tabIndex={0}
+                          aria-label="Upload thumbnail image by clicking or dragging and dropping"
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                              e.preventDefault();
+                              document
+                                .getElementById(thumbnailUploadId)
+                                ?.click();
+                            }
+                          }}
+                        >
                           <div className="text-center h-full flex flex-col justify-center">
                             <Upload className="mx-auto h-8 w-8 text-muted-foreground/50" />
                             <div className="mt-2">
@@ -359,7 +492,7 @@ export default function CreatePage() {
                                 className="cursor-pointer"
                               >
                                 <span className="text-sm font-medium text-primary hover:text-primary/80">
-                                  Upload thumbnail
+                                  Upload thumbnail or drag and drop
                                 </span>
                                 <Input
                                   id={thumbnailUploadId}
@@ -371,7 +504,11 @@ export default function CreatePage() {
                                 />
                               </Label>
                               <p className="mt-1 text-xs text-muted-foreground">
-                                JPG, PNG, or GIF (16:9 ratio recommended)
+                                Drag and drop or click to upload
+                              </p>
+                              <p className="text-xs text-muted-foreground">
+                                JPG, PNG, or GIF (MAX. 10MB, 16:9 ratio
+                                recommended)
                               </p>
                             </div>
                           </div>

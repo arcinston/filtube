@@ -1,0 +1,14 @@
+{
+  "name": "Filtube",
+  "tagline": "People Powered YT",
+  "description": "A decentralized video platform that empowers creators with true ownership of their content. Built on Filecoin storage infrastructure, Filtube enables users to upload, share, and monetize videos while maintaining complete control over their data. Creators can receive tips in USDFC stablecoins directly from viewers, and all content is cached on FilCDN for fast, reliable access. Unlike traditional platforms, creators retain sovereign ownership of their content with secure, censorship-resistant hosting.",
+  "team": [
+    {
+      "name": "Arush Kurundodi",
+      "email": "arushkurundodi@gmail.com"
+    }
+  ],
+  "demo_url": "https://filtube.arcy.in/demo",
+  "video_url": "",
+  "technologies": ["Next.JS", "Filecoin", "FilCDN", "USDFC", "AI"]
+}
