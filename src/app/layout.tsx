@@ -3,6 +3,7 @@ import './globals.css';
 import { ThemeProvider } from '@/components/theme-provider';
 import { Web3Provider } from './Web3Provider';
 import { Toaster } from '@/components/ui/sonner';
+import { TRPCReactProvider } from '@/trpc/provider';
 
 export const metadata: Metadata = {
   title: 'FilTube',
@@ -17,17 +18,19 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <Web3Provider>
-            {children}
-            <Toaster />
-          </Web3Provider>
-        </ThemeProvider>
+        <TRPCReactProvider>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <Web3Provider>
+              {children}
+              <Toaster />
+            </Web3Provider>
+          </ThemeProvider>
+        </TRPCReactProvider>
       </body>
     </html>
   );

@@ -119,12 +119,8 @@
           "name": "videos_walletAddress_users_walletAddress_fk",
           "tableFrom": "videos",
           "tableTo": "users",
-          "columnsFrom": [
-            "walletAddress"
-          ],
-          "columnsTo": [
-            "walletAddress"
-          ],
+          "columnsFrom": ["walletAddress"],
+          "columnsTo": ["walletAddress"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }

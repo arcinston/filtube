@@ -1,24 +1,23 @@
 'use client';
 
-import { useState, useId, useEffect } from 'react';
-import { Header } from '@/components/Header';
+import { BarChart3, ImageIcon, Library, Play, Upload, X } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import type React from 'react';
+import { useEffect, useId, useState } from 'react';
+import { useAccount } from 'wagmi';
+import { toast } from 'sonner';
+
+import { api } from '@/trpc/provider';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Textarea } from '@/components/ui/textarea';
+import { useFileUpload, type UploadedInfo } from '@/hooks/useFileUpload';
+import { Header } from '@/components/Header';
 import { WalletStats } from '@/components/WalletStats';
 import { VideoLibrary } from '@/components/VideoLibrary';
-import { useFileUpload, type UploadedInfo } from '@/hooks/useFileUpload';
-import {
-  Upload,
-  X,
-  Play,
-  Image as ImageIcon,
-  BarChart3,
-  Library,
-} from 'lucide-react';
 
 interface UploadState {
   uploading: boolean;
@@ -37,6 +36,10 @@ interface VideoMetadata {
 }
 
 export default function CreatePage() {
+  const router = useRouter();
+  const { address } = useAccount();
+  const createVideoMutation = api.video.create.useMutation();
+
   const [metadata, setMetadata] = useState<VideoMetadata>({
     title: '',
     description: '',
@@ -94,6 +97,23 @@ export default function CreatePage() {
       });
     }
   }, [thumbnailUploadedInfo, thumbnailUploadMutation.isSuccess]);
+
+  useEffect(() => {
+    if (createVideoMutation.isSuccess) {
+      toast.success('Video published successfully!');
+      router.push('/');
+    }
+    if (createVideoMutation.isError) {
+      toast.error('Failed to publish video. Please try again.', {
+        description: createVideoMutation.error.message,
+      });
+    }
+  }, [
+    createVideoMutation.isSuccess,
+    createVideoMutation.isError,
+    createVideoMutation.error,
+    router,
+  ]);
 
   const videoUploadId = useId();
   const thumbnailUploadId = useId();
@@ -255,44 +275,39 @@ export default function CreatePage() {
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
 
-    try {
-      // Check if video file exists and has been uploaded
-      if (!metadata.video) {
-        alert('Please select a video file');
-        return;
-      }
-
-      if (videoUploadInfo?.uploading || videoUploadMutation.isPending) {
-        alert('Please wait for file upload to complete');
-        return;
-      }
-
-      if (!videoUploadInfo?.completed) {
-        alert('Please upload video to Filecoin first');
-        return;
-      }
-
-      // In a real implementation, you would:
-      // 1. Store metadata on blockchain with CommP references
-      // 2. Navigate to the video page
-
-      const videoData = {
-        title: metadata.title,
-        description: metadata.description,
-        category: metadata.category,
-        tags: metadata.tags,
-        videoCommP: videoUploadInfo?.info?.commp,
-        thumbnailCommP: thumbnailUploadInfo?.info?.commp,
-        videoUploadInfo: videoUploadInfo,
-        thumbnailUploadInfo: thumbnailUploadInfo,
-      };
-
-      console.log('Submitting video data:', videoData);
-      alert('Video metadata prepared for blockchain storage!');
-    } catch (error) {
-      console.error('Submit failed:', error);
-      alert('Submit failed. Please try again.');
+    if (!address) {
+      toast.error('Please connect your wallet to publish a video.');
+      return;
     }
+
+    if (!videoUploadInfo?.completed || !videoUploadInfo.info?.commp) {
+      toast.error('Please wait for video to finish uploading.');
+      return;
+    }
+
+    if (!thumbnailUploadInfo?.completed || !thumbnailUploadInfo.info?.commp) {
+      toast.error('Please wait for thumbnail to finish uploading.');
+      return;
+    }
+
+    if (!metadata.title) {
+      toast.error('Please provide a title for your video.');
+      return;
+    }
+
+    if (!metadata.category) {
+      toast.error('Please select a category for your video.');
+      return;
+    }
+
+    createVideoMutation.mutate({
+      title: metadata.title,
+      description: metadata.description,
+      videoCommp: videoUploadInfo.info.commp,
+      thumbnailCommp: thumbnailUploadInfo.info.commp,
+      authorAddress: address,
+      category: metadata.category,
+    });
   };
 
   return (
@@ -708,14 +723,20 @@ export default function CreatePage() {
                   disabled={
                     !metadata.video ||
                     !metadata.title ||
-                    videoUploadInfo?.uploading ||
-                    !videoUploadInfo?.completed
+                    !videoUploadInfo?.completed ||
+                    !thumbnailUploadInfo?.completed ||
+                    videoUploadMutation.isPending ||
+                    thumbnailUploadMutation.isPending ||
+                    createVideoMutation.isPending
                   }
                   className="min-w-[120px]"
                 >
-                  {videoUploadInfo?.uploading
-                    ? 'Uploading...'
-                    : 'Publish Video'}
+                  {createVideoMutation.isPending
+                    ? 'Publishing...'
+                    : videoUploadMutation.isPending ||
+                        thumbnailUploadMutation.isPending
+                      ? 'Uploading...'
+                      : 'Publish Video'}
                 </Button>
               </div>
             </form>
