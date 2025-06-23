@@ -57,32 +57,43 @@ export default function CreatePage() {
   const [videoDragActive, setVideoDragActive] = useState(false);
   const [thumbnailDragActive, setThumbnailDragActive] = useState(false);
 
-  const { uploadFileMutation, progress, uploadedInfo, handleReset, status } =
-    useFileUpload();
+  const {
+    uploadFileMutation: videoUploadMutation,
+    progress: videoProgress,
+    uploadedInfo: videoUploadedInfo,
+    handleReset: handleVideoReset,
+    status: videoStatus,
+  } = useFileUpload();
 
-  // Capture uploadedInfo when upload completes
+  const {
+    uploadFileMutation: thumbnailUploadMutation,
+    progress: thumbnailProgress,
+    uploadedInfo: thumbnailUploadedInfo,
+    handleReset: handleThumbnailReset,
+    status: thumbnailStatus,
+  } = useFileUpload();
+
+  // Capture videoUploadedInfo when video upload completes
   useEffect(() => {
-    if (uploadedInfo && uploadFileMutation.isSuccess) {
-      if (videoUploadInfo?.uploading) {
-        setVideoUploadInfo({
-          uploading: false,
-          completed: true,
-          info: uploadedInfo,
-        });
-      } else if (thumbnailUploadInfo?.uploading) {
-        setThumbnailUploadInfo({
-          uploading: false,
-          completed: true,
-          info: uploadedInfo,
-        });
-      }
+    if (videoUploadedInfo && videoUploadMutation.isSuccess) {
+      setVideoUploadInfo({
+        uploading: false,
+        completed: true,
+        info: videoUploadedInfo,
+      });
     }
-  }, [
-    uploadedInfo,
-    uploadFileMutation.isSuccess,
-    videoUploadInfo?.uploading,
-    thumbnailUploadInfo?.uploading,
-  ]);
+  }, [videoUploadedInfo, videoUploadMutation.isSuccess]);
+
+  // Capture thumbnailUploadedInfo when thumbnail upload completes
+  useEffect(() => {
+    if (thumbnailUploadedInfo && thumbnailUploadMutation.isSuccess) {
+      setThumbnailUploadInfo({
+        uploading: false,
+        completed: true,
+        info: thumbnailUploadedInfo,
+      });
+    }
+  }, [thumbnailUploadedInfo, thumbnailUploadMutation.isSuccess]);
 
   const videoUploadId = useId();
   const thumbnailUploadId = useId();
@@ -125,10 +136,10 @@ export default function CreatePage() {
 
     // Upload to Filecoin
     setVideoUploadInfo({ uploading: true });
-    handleReset();
+    handleVideoReset();
     try {
-      await uploadFileMutation.mutateAsync(file);
-      // uploadedInfo will be captured in useEffect
+      await videoUploadMutation.mutateAsync(file);
+      // videoUploadedInfo will be captured in useEffect
     } catch (error) {
       console.error('Video upload failed:', error);
       setVideoUploadInfo({ uploading: false, error: true });
@@ -142,10 +153,10 @@ export default function CreatePage() {
 
     // Upload to Filecoin
     setThumbnailUploadInfo({ uploading: true });
-    handleReset();
+    handleThumbnailReset();
     try {
-      await uploadFileMutation.mutateAsync(file);
-      // uploadedInfo will be captured in useEffect
+      await thumbnailUploadMutation.mutateAsync(file);
+      // thumbnailUploadedInfo will be captured in useEffect
     } catch (error) {
       console.error('Thumbnail upload failed:', error);
       setThumbnailUploadInfo({ uploading: false, error: true });
@@ -183,7 +194,7 @@ export default function CreatePage() {
       return;
     }
 
-    if (!uploadFileMutation.isPending) {
+    if (!videoUploadMutation.isPending) {
       await handleVideoFile(videoFile);
     }
   };
@@ -219,7 +230,7 @@ export default function CreatePage() {
       return;
     }
 
-    if (!uploadFileMutation.isPending) {
+    if (!thumbnailUploadMutation.isPending) {
       await handleThumbnailFile(imageFile);
     }
   };
@@ -251,7 +262,7 @@ export default function CreatePage() {
         return;
       }
 
-      if (videoUploadInfo?.uploading || uploadFileMutation.isPending) {
+      if (videoUploadInfo?.uploading || videoUploadMutation.isPending) {
         alert('Please wait for file upload to complete');
         return;
       }
@@ -343,7 +354,7 @@ export default function CreatePage() {
                     <div className="space-y-4">
                       {!videoPreview ? (
                         <div
-                          className={`border-2 border-dashed rounded-lg p-8 transition-colors cursor-pointer hover:border-primary/50 hover:bg-primary/5 ${
+                          className={`border-2 border-dashed rounded-lg p-8 aspect-video transition-colors cursor-pointer hover:border-primary/50 hover:bg-primary/5 ${
                             videoDragActive
                               ? 'border-primary bg-primary/5'
                               : 'border-muted-foreground/25'
@@ -361,9 +372,9 @@ export default function CreatePage() {
                             }
                           }}
                         >
-                          <div className="text-center">
-                            <Upload className="mx-auto h-12 w-12 text-muted-foreground/50" />
-                            <div className="mt-4">
+                          <div className="text-center h-full flex flex-col justify-center">
+                            <Upload className="mx-auto h-8 w-8 text-muted-foreground/50" />
+                            <div className="mt-2">
                               <Label
                                 htmlFor={videoUploadId}
                                 className="cursor-pointer"
@@ -377,7 +388,7 @@ export default function CreatePage() {
                                   accept="video/*"
                                   className="hidden"
                                   onChange={handleVideoUpload}
-                                  disabled={uploadFileMutation.isPending}
+                                  disabled={videoUploadMutation.isPending}
                                 />
                               </Label>
                               <p className="mt-1 text-xs text-muted-foreground">
@@ -414,7 +425,7 @@ export default function CreatePage() {
                                 video: null,
                               }));
                               setVideoUploadInfo(null);
-                              handleReset();
+                              handleVideoReset();
                             }}
                             disabled={videoUploadInfo?.uploading}
                           >
@@ -433,17 +444,17 @@ export default function CreatePage() {
                         <div className="space-y-2">
                           <div className="flex justify-between text-sm">
                             <span>Uploading video to Filecoin...</span>
-                            <span>{progress}%</span>
+                            <span>{videoProgress}%</span>
                           </div>
                           <div className="w-full bg-secondary rounded-full h-2">
                             <div
                               className="bg-primary h-2 rounded-full transition-all duration-300"
-                              style={{ width: `${progress}%` }}
+                              style={{ width: `${videoProgress}%` }}
                             />
                           </div>
-                          {status && (
+                          {videoStatus && (
                             <p className="text-xs text-muted-foreground">
-                              {status}
+                              {videoStatus}
                             </p>
                           )}
                         </div>
@@ -500,7 +511,7 @@ export default function CreatePage() {
                                   accept="image/*"
                                   className="hidden"
                                   onChange={handleThumbnailUpload}
-                                  disabled={uploadFileMutation.isPending}
+                                  disabled={thumbnailUploadMutation.isPending}
                                 />
                               </Label>
                               <p className="mt-1 text-xs text-muted-foreground">
@@ -532,7 +543,7 @@ export default function CreatePage() {
                                 thumbnail: null,
                               }));
                               setThumbnailUploadInfo(null);
-                              handleReset();
+                              handleThumbnailReset();
                             }}
                             disabled={thumbnailUploadInfo?.uploading}
                           >
@@ -551,17 +562,17 @@ export default function CreatePage() {
                         <div className="space-y-2">
                           <div className="flex justify-between text-sm">
                             <span>Uploading thumbnail to Filecoin...</span>
-                            <span>{progress}%</span>
+                            <span>{thumbnailProgress}%</span>
                           </div>
                           <div className="w-full bg-secondary rounded-full h-2">
                             <div
                               className="bg-primary h-2 rounded-full transition-all duration-300"
-                              style={{ width: `${progress}%` }}
+                              style={{ width: `${thumbnailProgress}%` }}
                             />
                           </div>
-                          {status && (
+                          {thumbnailStatus && (
                             <p className="text-xs text-muted-foreground">
-                              {status}
+                              {thumbnailStatus}
                             </p>
                           )}
                         </div>

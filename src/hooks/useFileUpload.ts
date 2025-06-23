@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useId } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { Synapse } from '@filoz/synapse-sdk';
 import { useEthersSigner } from '@/hooks/useEthers';
@@ -19,6 +19,7 @@ export type UploadedInfo = {
  * Hook to upload a file to the Filecoin network using Synapse.
  */
 export const useFileUpload = () => {
+  const id = useId();
   const [progress, setProgress] = useState(0);
   const [status, setStatus] = useState('');
   const [uploadedInfo, setUploadedInfo] = useState<UploadedInfo | null>(null);
@@ -27,7 +28,7 @@ export const useFileUpload = () => {
   const { address, chainId } = useAccount();
   const { data: network } = useNetwork();
   const mutation = useMutation({
-    mutationKey: ['file-upload', address, chainId],
+    mutationKey: ['file-upload', address, chainId, id],
     mutationFn: async (file: File) => {
       if (!signer) throw new Error('Signer not found');
       if (!address) throw new Error('Address not found');
@@ -148,7 +149,7 @@ export const useFileUpload = () => {
       setStatus('🎉 File successfully stored on Filecoin!');
       setProgress(100);
     },
-    onError: (error) => {
+    onError: (error: Error) => {
       console.error('Upload failed:', error);
       setStatus(`❌ Upload failed: ${error.message || 'Please try again'}`);
       setProgress(0);
