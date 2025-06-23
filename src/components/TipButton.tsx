@@ -7,37 +7,104 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Heart, X, HelpCircle } from 'lucide-react';
+import { useWriteContract, useAccount, useChainId } from 'wagmi';
+import { parseUnits } from 'viem';
+import { toast } from 'sonner';
+
+const usdfcContractAddress = '0xb3042734b608a1B16e9e86B374A3f3e389B4cDf0';
+const usdfcAbi = [
+  {
+    name: 'transfer',
+    type: 'function',
+    inputs: [
+      { name: 'to', type: 'address' },
+      { name: 'value', type: 'uint256' },
+    ],
+    outputs: [{ name: '', type: 'bool' }],
+    stateMutability: 'nonpayable',
+  },
+] as const;
 
 interface TipButtonProps {
   channelName: string;
   channelAvatar?: string;
 }
-
+const truncateAddress = (address: string) => {
+  if (address.length <= 10) return address;
+  return `${address.slice(0, 6)}...${address.slice(-4)}`;
+};
 export function TipButton({ channelName, channelAvatar }: TipButtonProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [tipAmount, setTipAmount] = useState('');
   const [message, setMessage] = useState('');
   const [sliderValue, setSliderValue] = useState(0);
 
+  const { isConnected } = useAccount();
+  const chainId = useChainId();
+  const { writeContract, isPending: isSendingTip } = useWriteContract();
+
   const customAmountId = useId();
   const tipMessageId = useId();
   const sliderId = useId();
-  const predefinedAmounts = [50, 100, 250, 500, 1000];
+  const predefinedAmounts = [5, 10, 25, 50, 100, 200, 500, 1000];
 
   const handleSliderChange = (value: number) => {
     setSliderValue(value);
-    if (value < predefinedAmounts.length) {
+    if (value >= 0 && value < predefinedAmounts.length) {
       setTipAmount(predefinedAmounts[value].toString());
     }
   };
 
+  const handleCustomAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const amount = e.target.value;
+    setTipAmount(amount);
+
+    const index = predefinedAmounts.findIndex((p) => p.toString() === amount);
+    setSliderValue(index); // will be -1 if not found
+  };
+
   const handleSendTip = () => {
-    // TODO: Implement actual tip sending logic
-    console.log('Sending tip:', { amount: tipAmount, message });
-    setIsModalOpen(false);
-    setTipAmount('');
-    setMessage('');
-    setSliderValue(0);
+    if (!isConnected) {
+      toast.error('Please connect your wallet first.');
+      return;
+    }
+
+    // Calibration testnet chain id is 314159
+    if (chainId !== 314159) {
+      toast.error('Please switch to the Calibration testnet to send a tip.');
+      return;
+    }
+
+    const amount = Number.parseFloat(tipAmount);
+    if (Number.isNaN(amount) || amount <= 0) {
+      toast.error('Please enter a valid tip amount.');
+      return;
+    }
+
+    writeContract(
+      {
+        address: usdfcContractAddress,
+        abi: usdfcAbi,
+        functionName: 'transfer',
+        args: [channelName as `0x${string}`, parseUnits(tipAmount, 18)],
+      },
+      {
+        onSuccess: (txHash) => {
+          toast.success('Tip sent successfully!', {
+            description: `Transaction: ${txHash}`,
+          });
+          setIsModalOpen(false);
+          setTipAmount('');
+          setMessage('');
+          setSliderValue(0);
+        },
+        onError: (error) => {
+          toast.error('Failed to send tip', {
+            description: error.message,
+          });
+        },
+      },
+    );
   };
 
   return (
@@ -53,13 +120,13 @@ export function TipButton({ channelName, channelAvatar }: TipButtonProps) {
 
       {/* Modal Overlay */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50">
           <div className="w-full max-w-md mx-4">
             <Card className="border-0 shadow-2xl">
               <CardHeader className="pb-4">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-xl font-semibold">
-                    Thank {channelName} - FilTube
+                    Thank {truncateAddress(channelName)} - FilTube
                   </CardTitle>
                   <div className="flex items-center gap-2">
                     <Button
@@ -80,7 +147,8 @@ export function TipButton({ channelName, channelAvatar }: TipButtonProps) {
                   </div>
                 </div>
                 <p className="text-sm text-muted-foreground">
-                  Buy a Super Thanks, which directly supports {channelName}.
+                  Buy a Super Thanks, which directly supports{' '}
+                  {truncateAddress(channelName)}.
                 </p>
               </CardHeader>
 
@@ -109,7 +177,7 @@ export function TipButton({ channelName, channelAvatar }: TipButtonProps) {
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-1">
                         <span className="text-sm font-medium">
-                          @{channelName.toLowerCase().replace(/\s+/g, '')}
+                          @{truncateAddress(channelName)}
                         </span>
                         <span className="bg-orange-500 text-white text-xs px-2 py-1 rounded-full">
                           ${tipAmount || '0'}.00
@@ -194,10 +262,7 @@ export function TipButton({ channelName, channelAvatar }: TipButtonProps) {
                         type="number"
                         placeholder="0.00"
                         value={tipAmount}
-                        onChange={(e) => {
-                          setTipAmount(e.target.value);
-                          setSliderValue(-1); // Reset slider when custom amount is entered
-                        }}
+                        onChange={handleCustomAmountChange}
                         className="pl-7"
                         min="1"
                       />
@@ -236,9 +301,13 @@ export function TipButton({ channelName, channelAvatar }: TipButtonProps) {
                 <Button
                   className="w-full"
                   onClick={handleSendTip}
-                  disabled={!tipAmount || Number.parseFloat(tipAmount) <= 0}
+                  disabled={
+                    !tipAmount ||
+                    Number.parseFloat(tipAmount) <= 0 ||
+                    isSendingTip
+                  }
                 >
-                  Buy and Send
+                  {isSendingTip ? 'Sending...' : 'Buy and Send'}
                 </Button>
               </CardContent>
             </Card>

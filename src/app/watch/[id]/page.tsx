@@ -214,7 +214,7 @@ export default function WatchPage() {
               </div>
               <div className="flex items-center gap-2">
                 <TipButton
-                  channelName={truncateAddress(video.walletAddress)}
+                  channelName={video.walletAddress}
                   channelAvatar={generateBlockie(video.walletAddress)}
                 />
                 <Button>Subscribe</Button>
