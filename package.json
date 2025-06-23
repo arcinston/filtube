@@ -15,7 +15,7 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@filoz/synapse-sdk": "github:arcinston/synapse-sdk#master",
+    "@filoz/synapse-sdk": "^0.13.0",
     "@libsql/client": "^0.15.9",
     "@paralleldrive/cuid2": "^2.2.2",
     "@radix-ui/react-label": "^2.1.7",
@@ -32,6 +32,7 @@
     "connectkit": "^1.9.1",
     "date-fns": "^4.1.0",
     "drizzle-orm": "^0.44.2",
+    "ethereum-blockies": "^0.1.1",
     "jotai": "^2.12.5",
     "lucide-react": "^0.518.0",
     "next": "15.3.4",

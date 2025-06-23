@@ -4,7 +4,7 @@
     "": {
       "name": "filtube",
       "dependencies": {
-        "@filoz/synapse-sdk": "github:arcinston/synapse-sdk#master",
+        "@filoz/synapse-sdk": "^0.13.0",
         "@libsql/client": "^0.15.9",
         "@paralleldrive/cuid2": "^2.2.2",
         "@radix-ui/react-label": "^2.1.7",
@@ -21,6 +21,7 @@
         "connectkit": "^1.9.1",
         "date-fns": "^4.1.0",
         "drizzle-orm": "^0.44.2",
+        "ethereum-blockies": "^0.1.1",
         "jotai": "^2.12.5",
         "lucide-react": "^0.518.0",
         "next": "15.3.4",
@@ -194,7 +195,7 @@
 
     "@ethereumjs/util": ["@ethereumjs/util@8.1.0", "", { "dependencies": { "@ethereumjs/rlp": "^4.0.1", "ethereum-cryptography": "^2.0.0", "micro-ftch": "^0.3.1" } }, "sha512-zQ0IqbdX8FZ9aw11vP+dZkKDkS+kgIvQPHnSAXzP9pLu+Rfu3D3XEeLbicvoXJTYnhZiPmsZUxgdzXwNKxRPbA=="],
 
-    "@filoz/synapse-sdk": ["@filoz/synapse-sdk@github:arcinston/synapse-sdk#271fda7", { "dependencies": { "@web3-storage/data-segment": "^5.3.0", "ethers": "^6.14.3", "multiformats": "^13.3.6" } }, "arcinston-synapse-sdk-271fda7"],
+    "@filoz/synapse-sdk": ["@filoz/synapse-sdk@0.13.0", "", { "dependencies": { "@web3-storage/data-segment": "^5.3.0", "ethers": "^6.14.3", "multiformats": "^13.3.6" } }, "sha512-GJQjvf3zdLSTd43Bq+656QAZV2dNHXPQg9IddkKHvRak2sXXno79Jg4NP6EkkzpsKHvqQChx7eIHK8LzMhCqNA=="],
 
     "@img/sharp-darwin-arm64": ["@img/sharp-darwin-arm64@0.34.2", "", { "optionalDependencies": { "@img/sharp-libvips-darwin-arm64": "1.1.0" }, "os": "darwin", "cpu": "arm64" }, "sha512-OfXHZPppddivUJnqyKoi5YVeHRkkNE2zUFT2gbpKxp/JZCFYEYubnMg+gOp6lWfasPrTS+KPosKqdI+ELYVDtg=="],
 
@@ -697,6 +698,8 @@
     "eth-query": ["eth-query@2.1.2", "", { "dependencies": { "json-rpc-random-id": "^1.0.0", "xtend": "^4.0.1" } }, "sha512-srES0ZcvwkR/wd5OQBRA1bIJMww1skfGS0s8wlwK3/oNP4+wnds60krvu5R1QbpRQjMmpG5OMIWro5s7gvDPsA=="],
 
     "eth-rpc-errors": ["eth-rpc-errors@4.0.3", "", { "dependencies": { "fast-safe-stringify": "^2.0.6" } }, "sha512-Z3ymjopaoft7JDoxZcEb3pwdGh7yiYMhOwm2doUt6ASXlMavpNlK6Cre0+IMl2VSGyEU9rkiperQhp5iRxn5Pg=="],
+
+    "ethereum-blockies": ["ethereum-blockies@0.1.1", "", {}, "sha512-ED+noMZ6z7RrzzhvrQna1L30C27MX+ZsdB5c/d5vygXtHjEyAQjQS2TgCYhPxs+z3U+u2YQsL9PiRkNl1f+ugg=="],
 
     "ethereum-cryptography": ["ethereum-cryptography@2.2.1", "", { "dependencies": { "@noble/curves": "1.4.2", "@noble/hashes": "1.4.0", "@scure/bip32": "1.4.0", "@scure/bip39": "1.3.0" } }, "sha512-r/W8lkHSiTLxUxW8Rf3u4HGB0xQweG2RyETjywylKZSzLWoWAijRz8WCuOtJ6wah+avllXBqZuk29HCCvhEIRg=="],
 

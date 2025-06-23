@@ -1,0 +1,1 @@
+"@filoz/synapse-sdk": "github:arcinston/synapse-sdk#master",

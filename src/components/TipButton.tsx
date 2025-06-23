@@ -7,7 +7,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Heart, X, HelpCircle } from 'lucide-react';
-import Image from 'next/image';
 
 interface TipButtonProps {
   channelName: string;
@@ -94,7 +93,7 @@ export function TipButton({ channelName, channelAvatar }: TipButtonProps) {
                   <div className="flex items-center gap-3">
                     <div className="w-12 h-12 rounded-full overflow-hidden bg-muted">
                       {channelAvatar ? (
-                        <Image
+                        <img
                           src={channelAvatar}
                           alt={channelName}
                           width={48}

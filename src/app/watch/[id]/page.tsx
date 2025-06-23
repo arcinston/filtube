@@ -6,27 +6,21 @@ import { RelatedVideoCard } from '@/components/RelatedVideoCard';
 import { TipButton } from '@/components/TipButton';
 import { Button } from '@/components/ui/button';
 import { ThumbsUp, ThumbsDown, Share, Download, Flag } from 'lucide-react';
+import { create as createBlockie } from 'ethereum-blockies';
+import { api } from '@/trpc/provider';
 
-// Mock data for demonstration
-const mockVideoDetails = {
-  '1': {
-    id: '1',
-    title: 'Introduction to Filecoin: The Future of Decentralized Storage',
-    description:
-      'Learn about Filecoin, a decentralized storage network that turns cloud storage into an algorithmic market. This comprehensive introduction covers the basics of how Filecoin works, its benefits over traditional storage solutions, and how you can get started with using the network.\n\nIn this video, we cover:\n- What is Filecoin and how it works\n- The difference between IPFS and Filecoin\n- Storage deals and retrieval\n- Getting started as a user\n- Future developments and roadmap\n\nTimestamps:\n0:00 Introduction\n2:15 What is Filecoin?\n5:30 How storage deals work\n8:45 IPFS vs Filecoin\n11:20 Getting started\n\nResources:\n- Filecoin.io\n- Filecoin documentation\n- IPFS.io',
-    videoUrl:
-      'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
-    channelName: 'FilecoinFoundation',
-    channelAvatar:
-      'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=36&h=36&fit=crop&crop=face',
-    subscriberCount: 125000,
-    views: 125000,
-    likes: 8500,
-    dislikes: 120,
-    uploadedAt: new Date('2024-01-15'),
-    duration: '12:34',
-  },
-  // Add more mock videos as needed
+const truncateAddress = (address: string) => {
+  if (address.length <= 10) return address;
+  return `${address.slice(0, 6)}...${address.slice(-4)}`;
+};
+
+const generateBlockie = (address: string) => {
+  const canvas = createBlockie({
+    seed: address.toLowerCase(),
+    size: 8,
+    scale: 5, // results in 40x40 px image
+  });
+  return canvas.toDataURL();
 };
 
 const relatedVideos = [
@@ -84,10 +78,12 @@ export default function WatchPage() {
   const params = useParams();
   const videoId = params.id as string;
 
-  // Get video details (in a real app, this would be fetched from an API)
-  const video =
-    mockVideoDetails[videoId as keyof typeof mockVideoDetails] ||
-    mockVideoDetails['1'];
+  const { data: video, isLoading } = api.video.getById.useQuery(
+    { id: videoId },
+    {
+      enabled: !!videoId,
+    },
+  );
 
   const formatNumber = (num: number) => {
     if (num >= 1000000) {
@@ -107,6 +103,28 @@ export default function WatchPage() {
     });
   };
 
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background text-foreground">
+        <Header />
+        <main className="container mx-auto flex h-[calc(100vh-80px)] items-center justify-center px-4 py-6">
+          <p>Loading video...</p>
+        </main>
+      </div>
+    );
+  }
+
+  if (!video) {
+    return (
+      <div className="min-h-screen bg-background text-foreground">
+        <Header />
+        <main className="container mx-auto flex h-[calc(100vh-80px)] items-center justify-center px-4 py-6">
+          <p>Video not found.</p>
+        </main>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -120,9 +138,12 @@ export default function WatchPage() {
               <video
                 className="w-full h-full"
                 controls
-                poster="https://images.unsplash.com/photo-1518709268805-4e9042af2176?w=800&h=450&fit=crop"
+                poster={`https://${video.walletAddress}.calibration.filcdn.io/${video.thumbnailCommp}`}
               >
-                <source src={video.videoUrl} type="video/mp4" />
+                <source
+                  src={`https://${video.walletAddress}.calibration.filcdn.io/${video.videoCommp}`}
+                  type="video/mp4"
+                />
                 <track kind="captions" srcLang="en" label="English captions" />
                 Your browser does not support the video tag.
               </video>
@@ -136,21 +157,21 @@ export default function WatchPage() {
             {/* Video Stats and Actions */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
               <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                <span>{formatNumber(video.views)} views</span>
+                <span>{formatNumber(video.views ?? 0)} views</span>
                 <span>•</span>
-                <span>{formatDate(video.uploadedAt)}</span>
+                <span>{formatDate(new Date(video.uploaded_at))}</span>
               </div>
 
               <div className="flex items-center gap-2">
                 <div className="flex items-center rounded-full bg-muted">
                   <Button variant="ghost" size="sm" className="rounded-l-full">
                     <ThumbsUp className="w-4 h-4 mr-2" />
-                    {formatNumber(video.likes)}
+                    {formatNumber(video.likes ?? 0)}
                   </Button>
                   <div className="w-px h-6 bg-border" />
                   <Button variant="ghost" size="sm" className="rounded-r-full">
                     <ThumbsDown className="w-4 h-4 mr-2" />
-                    {formatNumber(video.dislikes)}
+                    {formatNumber(video.dislikes ?? 0)}
                   </Button>
                 </div>
 
@@ -175,8 +196,8 @@ export default function WatchPage() {
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full overflow-hidden bg-muted">
                   <img
-                    src={video.channelAvatar}
-                    alt={video.channelName}
+                    src={generateBlockie(video.walletAddress)}
+                    alt={video.walletAddress}
                     width={40}
                     height={40}
                     className="w-full h-full object-cover"
@@ -184,17 +205,17 @@ export default function WatchPage() {
                 </div>
                 <div>
                   <h3 className="font-semibold text-foreground">
-                    {video.channelName}
+                    {truncateAddress(video.walletAddress)}
                   </h3>
                   <p className="text-sm text-muted-foreground">
-                    {formatNumber(video.subscriberCount)} subscribers
+                    {formatNumber(0)} subscribers
                   </p>
                 </div>
               </div>
               <div className="flex items-center gap-2">
                 <TipButton
-                  channelName={video.channelName}
-                  channelAvatar={video.channelAvatar}
+                  channelName={truncateAddress(video.walletAddress)}
+                  channelAvatar={generateBlockie(video.walletAddress)}
                 />
                 <Button>Subscribe</Button>
               </div>

@@ -1,7 +1,32 @@
 'use client';
 
+import { useMemo } from 'react';
+import { create as createBlockie } from 'ethereum-blockies';
 import { Header } from '@/components/Header';
 import { VideoCard } from '@/components/VideoCard';
+import { api } from '@/trpc/provider';
+
+const formatDuration = (seconds: number) => {
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = Math.floor(seconds % 60);
+  return `${String(minutes).padStart(2, '0')}:${String(
+    remainingSeconds,
+  ).padStart(2, '0')}`;
+};
+
+const truncateAddress = (address: string) => {
+  if (address.length <= 10) return address;
+  return `${address.slice(0, 6)}...${address.slice(-4)}`;
+};
+
+const generateBlockie = (address: string) => {
+  const canvas = createBlockie({
+    seed: address.toLowerCase(),
+    size: 8,
+    scale: 4.5, // results in 36x36 px image
+  });
+  return canvas.toDataURL();
+};
 
 // Mock data for demonstration
 const mockVideos = [
@@ -152,6 +177,24 @@ const mockVideos = [
 ];
 
 export default function Home() {
+  const { data: dbVideos, isLoading } = api.video.getAll.useQuery();
+
+  const videos = useMemo(() => {
+    const fromDb =
+      dbVideos?.map((video) => ({
+        id: video.id,
+        title: video.title,
+        thumbnail: `https://${video.walletAddress}.calibration.filcdn.io/${video.thumbnailCommp}`,
+        channelName: truncateAddress(video.walletAddress),
+        channelAvatar: generateBlockie(video.walletAddress),
+        views: video.views ?? 0,
+        uploadedAt: new Date(video.uploaded_at),
+        duration: formatDuration(video.duration ?? 0),
+      })) ?? [];
+
+    return [...fromDb, ...mockVideos];
+  }, [dbVideos]);
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -159,9 +202,11 @@ export default function Home() {
       <main className="container mx-auto px-4 py-6">
         {/* Video Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
-          {mockVideos.map((video) => (
-            <VideoCard key={video.id} {...video} />
-          ))}
+          {isLoading ? (
+            <div className="col-span-full text-center">Loading videos...</div>
+          ) : (
+            videos.map((video) => <VideoCard key={video.id} {...video} />)
+          )}
         </div>
       </main>
     </div>
