@@ -1,12 +1,11 @@
 import { useState, useId } from 'react';
-import { useMutation } from '@tanstack/react-query';
-import { Synapse } from '@filoz/synapse-sdk';
-import { useEthersSigner } from '@/hooks/useEthers';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { useAccount } from 'wagmi';
+import { useAtom } from 'jotai';
+import { useSynapse } from '@/hooks/useSynapse';
 import { useNetwork } from '@/hooks/useNetwork';
 import { preflightCheck } from '@/utils/preflightCheck';
-import { getProofset } from '@/utils/getProofset';
-import { config } from '@/synapseConfig';
+import { storageServiceAtom } from '@/store/synapse';
 
 export type UploadedInfo = {
   fileName?: string;
@@ -24,55 +23,27 @@ export const useFileUpload = () => {
   const [status, setStatus] = useState('');
   const [uploadedInfo, setUploadedInfo] = useState<UploadedInfo | null>(null);
 
-  const signer = useEthersSigner();
   const { address, chainId } = useAccount();
   const { data: network } = useNetwork();
-  const mutation = useMutation({
-    mutationKey: ['file-upload', address, chainId, id],
-    mutationFn: async (file: File) => {
-      if (!signer) throw new Error('Signer not found');
-      if (!address) throw new Error('Address not found');
-      if (!chainId) throw new Error('Chain ID not found');
-      if (!network) throw new Error('Network not found');
-      setProgress(0);
-      setUploadedInfo(null);
-      setStatus('🔄 Initializing file upload to Filecoin...');
+  const { synapse, providerId } = useSynapse();
+  const [storageService, setStorageService] = useAtom(storageServiceAtom);
 
-      // 1) Convert File → ArrayBuffer
-      const arrayBuffer = await file.arrayBuffer();
-      // 2) Convert ArrayBuffer → Uint8Array
-      const uint8ArrayBytes = new Uint8Array(arrayBuffer);
-
-      // 3) Create Synapse instance
-      const synapse = await Synapse.create({
-        provider: signer.provider,
-        disableNonceManager: false,
-        withCDN: config.withCDN,
-      });
-
-      // 4) Get proofset
-      const { providerId } = await getProofset(signer, network, address);
-      // 5) Check if we have a proofset
-      const withProofset = !!providerId;
-
-      // 6) Check if we have enough USDFC to cover the storage costs and deposit if not
-      setStatus('💰 Checking USDFC balance and storage allowances...');
-      setProgress(5);
-      await preflightCheck(
-        file,
-        synapse,
-        network,
-        withProofset,
-        setStatus,
-        setProgress,
-      );
+  // A query to create the storage service instance once Synapse is ready.
+  // This is separated from the upload mutation to prevent re-creating the service
+  // for every upload, which is expensive and stateful.
+  useQuery({
+    queryKey: ['storage-service', !!synapse, providerId],
+    queryFn: async () => {
+      if (!synapse) {
+        // The `enabled` option should prevent this from running, but as a safeguard:
+        throw new Error('Synapse not ready for storage service creation.');
+      }
 
       setStatus('🔗 Setting up storage service and proof set...');
       setProgress(25);
 
-      // 7) Create storage service
-      const storageService = await synapse.createStorage({
-        providerId,
+      const service = await synapse.createStorage({
+        providerId: providerId ?? undefined,
         callbacks: {
           onProofSetResolved: (_info) => {
             setStatus('🔗 Existing proof set found and resolved');
@@ -101,9 +72,49 @@ export const useFileUpload = () => {
         },
       });
 
+      setStorageService(service);
+      return service;
+    },
+    enabled: !!synapse && !storageService,
+    staleTime: Number.POSITIVE_INFINITY,
+    refetchOnWindowFocus: false,
+    retry: false, // Avoid retrying on failure, as it's likely a setup issue.
+  });
+
+  const mutation = useMutation({
+    mutationKey: ['file-upload', address, chainId, id],
+    mutationFn: async (file: File) => {
+      if (!synapse) throw new Error('Synapse instance not found');
+      if (!storageService) throw new Error('Storage service not initialized');
+      if (!network) throw new Error('Network not found');
+
+      setProgress(0);
+      setUploadedInfo(null);
+      setStatus('🔄 Initializing file upload to Filecoin...');
+
+      // 1) Convert File → ArrayBuffer
+      const arrayBuffer = await file.arrayBuffer();
+      // 2) Convert ArrayBuffer → Uint8Array
+      const uint8ArrayBytes = new Uint8Array(arrayBuffer);
+
+      // 3) Check if we have a proofset
+      const withProofset = !!providerId;
+
+      // 4) Check if we have enough USDFC to cover the storage costs and deposit if not
+      setStatus('💰 Checking USDFC balance and storage allowances...');
+      setProgress(5);
+      await preflightCheck(
+        file,
+        synapse,
+        network,
+        withProofset,
+        setStatus,
+        setProgress,
+      );
+
       setStatus('📁 Uploading file to storage provider...');
       setProgress(55);
-      // 8) Upload file to storage provider
+      // 5) Upload file to storage provider
       const { commp } = await storageService.upload(uint8ArrayBytes, {
         onUploadComplete: (_commp) => {
           setStatus(
@@ -134,7 +145,8 @@ export const useFileUpload = () => {
       // In case the transaction was not given back by the storage provider, we wait for 50 seconds
       // So we make sure that the transaction is confirmed on chain
       if (!uploadedInfo?.txHash) {
-        await new Promise((resolve) => setTimeout(resolve, 50000));
+        console.warn('Transaction hash not found in uploaded info');
+        await new Promise((resolve) => setTimeout(resolve, 2000));
       }
 
       setProgress(95);
