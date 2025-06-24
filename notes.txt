@@ -1,1 +1,2 @@
 "@filoz/synapse-sdk": "github:arcinston/synapse-sdk#master",
+"@filoz/synapse-sdk": "^0.13.0",

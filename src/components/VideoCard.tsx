@@ -2,19 +2,27 @@
 
 import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card';
+import { create as createBlockie } from 'ethereum-blockies';
 import { formatDistanceToNow } from 'date-fns';
-
 interface VideoCardProps {
   id: string;
   title: string;
   thumbnail: string;
   channelName: string;
-  channelAvatar?: string;
+  channelAvatar: string;
   views: number;
   uploadedAt: Date;
   duration: string;
+  mock: boolean;
 }
-
+const generateBlockie = (address: string) => {
+  const canvas = createBlockie({
+    seed: address.toLowerCase(),
+    size: 8,
+    scale: 4.5, // results in 36x36 px image
+  });
+  return canvas.toDataURL();
+};
 export function VideoCard({
   id,
   title,
@@ -24,6 +32,7 @@ export function VideoCard({
   views,
   uploadedAt,
   duration,
+  mock,
 }: VideoCardProps) {
   const formatViews = (count: number) => {
     if (count >= 1000000) {
@@ -34,6 +43,10 @@ export function VideoCard({
     }
     return count.toString();
   };
+
+  if (mock) {
+    channelAvatar = generateBlockie(channelAvatar);
+  }
 
   return (
     <Link href={`/watch/${id}`} className="block group">

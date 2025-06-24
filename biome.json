@@ -44,19 +44,10 @@
     "includes": [
       "**",
       "!**/node_modules",
-      "!**/contracts",
       "!**/.next",
       "!**/dist",
       "!**/gen/**/*",
-      "!**/esmbuild",
-      "!**/packages/huddle01_flutter_client",
-      "!**/packages/huddle01-python",
-      "!**/unity",
-      "!**/unity_webgl",
-      "!**/artifacts",
-      "!**/deployments/**/*",
-      "!**/broadcast/**/*",
-      "!**/typechain-types/"
+      "!bun.lock"
     ]
   },
   "javascript": {

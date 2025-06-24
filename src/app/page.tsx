@@ -27,9 +27,20 @@ const generateBlockie = (address: string) => {
   });
   return canvas.toDataURL();
 };
+type TVideoData = {
+  id: string;
+  title: string;
+  thumbnail: string;
+  channelName: string;
+  channelAvatar: string;
+  views: number;
+  uploadedAt: Date;
+  duration: string;
+  mock: boolean;
+};
 
 // Mock data for demonstration
-const mockVideos = [
+const mockVideos: TVideoData[] = [
   {
     id: '1',
     title: 'Introduction to Filecoin: The Future of Decentralized Storage',
@@ -41,6 +52,7 @@ const mockVideos = [
     views: 125000,
     uploadedAt: new Date('2024-01-15'),
     duration: '12:34',
+    mock: false,
   },
   {
     id: '2',
@@ -53,6 +65,7 @@ const mockVideos = [
     views: 87500,
     uploadedAt: new Date('2024-01-10'),
     duration: '25:18',
+    mock: false,
   },
   {
     id: '3',
@@ -65,6 +78,7 @@ const mockVideos = [
     views: 234000,
     uploadedAt: new Date('2024-01-08'),
     duration: '18:42',
+    mock: false,
   },
   {
     id: '4',
@@ -77,6 +91,7 @@ const mockVideos = [
     views: 156000,
     uploadedAt: new Date('2024-01-05'),
     duration: '32:15',
+    mock: false,
   },
   {
     id: '5',
@@ -89,6 +104,7 @@ const mockVideos = [
     views: 92000,
     uploadedAt: new Date('2024-01-03'),
     duration: '15:27',
+    mock: false,
   },
   {
     id: '6',
@@ -101,6 +117,7 @@ const mockVideos = [
     views: 78000,
     uploadedAt: new Date('2024-01-01'),
     duration: '22:08',
+    mock: false,
   },
   {
     id: '7',
@@ -113,6 +130,7 @@ const mockVideos = [
     views: 345000,
     uploadedAt: new Date('2023-12-28'),
     duration: '45:33',
+    mock: false,
   },
   {
     id: '8',
@@ -125,6 +143,7 @@ const mockVideos = [
     views: 198000,
     uploadedAt: new Date('2023-12-25'),
     duration: '28:15',
+    mock: false,
   },
   {
     id: '9',
@@ -137,6 +156,7 @@ const mockVideos = [
     views: 167000,
     uploadedAt: new Date('2023-12-22'),
     duration: '38:47',
+    mock: false,
   },
   {
     id: '10',
@@ -149,6 +169,7 @@ const mockVideos = [
     views: 134000,
     uploadedAt: new Date('2023-12-20'),
     duration: '35:12',
+    mock: false,
   },
   {
     id: '11',
@@ -161,6 +182,7 @@ const mockVideos = [
     views: 89000,
     uploadedAt: new Date('2023-12-18'),
     duration: '19:25',
+    mock: false,
   },
   {
     id: '12',
@@ -173,6 +195,7 @@ const mockVideos = [
     views: 112000,
     uploadedAt: new Date('2023-12-15'),
     duration: '41:18',
+    mock: false,
   },
 ];
 
@@ -190,11 +213,12 @@ export default function Home() {
         views: video.views ?? 0,
         uploadedAt: new Date(video.uploaded_at),
         duration: formatDuration(video.duration ?? 0),
+        mock: true,
       })) ?? [];
 
     return [...fromDb, ...mockVideos];
   }, [dbVideos]);
-
+  console.log(videos);
   return (
     <div className="min-h-screen bg-background">
       <Header />
