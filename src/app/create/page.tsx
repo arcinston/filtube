@@ -774,7 +774,7 @@ export default function CreatePage() {
                             <p>
                               <strong>CommP:</strong>{' '}
                               <code className="text-xs">
-                                {videoUploadInfo.info.commp}
+                                {videoUploadInfo.info.commp.toString()}
                               </code>
                             </p>
                           )}
@@ -814,7 +814,7 @@ export default function CreatePage() {
                             <p>
                               <strong>CommP:</strong>{' '}
                               <code className="text-xs">
-                                {thumbnailUploadInfo.info.commp}
+                                {thumbnailUploadInfo.info.commp.toString()}
                               </code>
                             </p>
                           )}

@@ -4,7 +4,7 @@
     "": {
       "name": "filtube",
       "dependencies": {
-        "@filoz/synapse-sdk": "^0.13.0",
+        "@filoz/synapse-sdk": "^0.15.0",
         "@libsql/client": "^0.15.9",
         "@paralleldrive/cuid2": "^2.2.2",
         "@radix-ui/react-label": "^2.1.7",
@@ -50,8 +50,8 @@
   "trustedDependencies": [
     "@tailwindcss/oxide",
     "sharp",
-    "keccak",
     "utf-8-validate",
+    "keccak",
     "bufferutil",
   ],
   "packages": {
@@ -195,7 +195,7 @@
 
     "@ethereumjs/util": ["@ethereumjs/util@8.1.0", "", { "dependencies": { "@ethereumjs/rlp": "^4.0.1", "ethereum-cryptography": "^2.0.0", "micro-ftch": "^0.3.1" } }, "sha512-zQ0IqbdX8FZ9aw11vP+dZkKDkS+kgIvQPHnSAXzP9pLu+Rfu3D3XEeLbicvoXJTYnhZiPmsZUxgdzXwNKxRPbA=="],
 
-    "@filoz/synapse-sdk": ["@filoz/synapse-sdk@0.13.0", "", { "dependencies": { "@web3-storage/data-segment": "^5.3.0", "ethers": "^6.14.3", "multiformats": "^13.3.6" } }, "sha512-GJQjvf3zdLSTd43Bq+656QAZV2dNHXPQg9IddkKHvRak2sXXno79Jg4NP6EkkzpsKHvqQChx7eIHK8LzMhCqNA=="],
+    "@filoz/synapse-sdk": ["@filoz/synapse-sdk@0.15.0", "", { "dependencies": { "@web3-storage/data-segment": "^5.3.0", "ethers": "^6.14.3", "multiformats": "^13.3.6" } }, "sha512-G30d8R5yKraaIwPx3C6r0v/WvDJ+xVh/bvDCsxHLsL/loQRMFyqrzIId6YA3anoP3YFWURy3BNTXUxAdVJy10w=="],
 
     "@img/sharp-darwin-arm64": ["@img/sharp-darwin-arm64@0.34.2", "", { "optionalDependencies": { "@img/sharp-libvips-darwin-arm64": "1.1.0" }, "os": "darwin", "cpu": "arm64" }, "sha512-OfXHZPppddivUJnqyKoi5YVeHRkkNE2zUFT2gbpKxp/JZCFYEYubnMg+gOp6lWfasPrTS+KPosKqdI+ELYVDtg=="],
 
